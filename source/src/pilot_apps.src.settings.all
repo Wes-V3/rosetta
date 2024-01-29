@@ -954,6 +954,11 @@ sources = {
 		"buried_polar_finder",
 		"min_pack_min",
 	],
+	"pilot/sen" : [
+		"bootcamp",
+		"bootcamp_jd2"
+	],
+
 
 	# T ######################################################################
 	"pilot/thermo" : [
