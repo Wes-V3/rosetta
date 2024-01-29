@@ -19,7 +19,7 @@
 // Utility headers
 #include <utility/vector1.fwd.hh>
 
-// C++ headers
+// Java headers
 #include <string>
 
 namespace protocols {
