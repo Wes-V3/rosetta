@@ -19,6 +19,17 @@
 #include<core/pose/Pose.hh>
 #include<core/import_pose/import_pose.hh> //pose_from_file
 
+#include<core/scoring/ScoreFunctionFactory.hh> //get_score_funtion
+#include<core/scoring/ScoreFunction.fwd.hh>
+#include<core/scoring/ScoreFunction.hh>
+
+#include<numeric/random/random.hh>
+
+#include<protocols/moves/MonteCarlo.hh>
+#include<protocols/moves/MonteCarlo.fwd.hh>
+
+#include<protocols/moves/PyMOLMover.hh>
+
 int main( int argc, char ** argv ) {
 	devel::init( argc, argv );
 	utility::vector1< std::string > filenames = basic::options::option[ basic::options::OptionKeys::in::file::s ].value();
@@ -28,5 +39,35 @@ int main( int argc, char ** argv ) {
 		std::cout << "You didn't provide a PDB file with the -in::file::s option" << std::endl;
 		return 1;
 	}
+	
 	core::pose::PoseOP mypose = core::import_pose::pose_from_file( filenames[1] );
+	
+	core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
+	core::Real score = sfxn->score( *mypose );
+	std::cout << "The score is: " << score << std::endl;
+
+	core::Real temperature = 1;
+	protocols::moves::MonteCarloOP mc ( new protocols::moves::MonteCarlo( *mypose, *sfxn, temperature ) );
+	
+	protocols::moves::PyMOLObserverOP the_observer = protocols::moves::AddPyMOLObserver( *mypose, true, 0 );
+
+	core::Size N = mypose->size();
+	for (int i = 0; i < 10; i++) {
+		core::Real uniform_random_number = numeric::random::uniform();
+		core::Size randres = static_cast< core::Size > (uniform_random_number * N + 1);
+		core::Real pert1 = numeric::random::gaussian();
+		core::Real pert2 = numeric::random::gaussian();
+		core::Real orig_phi = mypose->phi( randres );
+		core::Real orig_psi = mypose->psi( randres );
+		mypose->set_phi( randres, orig_phi + pert1 );
+		mypose->set_psi( randres, orig_psi + pert2 );
+		mc->boltzmann( *mypose );
+		the_observer->pymol().apply( *mypose );
+	}
+	
+	std::cout << "After MonteCarlo, the score is: " << sfxn->score( *mypose ) << std::endl;
+	// std::cout << N << " | " << randres << " | " << pert1 << " | " << pert2 << " | " << orig_phi << " | " << orig_psi << " | " << mypose->phi( randres ) << " | " << mypose->psi( randres ) << std::endl;
+
+
 }
+// randomseed
