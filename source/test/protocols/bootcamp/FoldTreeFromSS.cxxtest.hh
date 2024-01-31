@@ -86,9 +86,9 @@ core::kinematics::FoldTree fold_tree_from_dssp_string(std::string & str) {
 		core::Size loop_mid = (ss_boundaries[ ii-1 ].second + ss_boundaries[ ii ].first) / 2;
 		core::Size ss_mid = (ss_boundaries[ ii ].first + ss_boundaries[ ii ].second) / 2;
 		ft.add_edge( first_mid, loop_mid, jump_index++ );
-		ft.add_edge( first_mid, ss_mid, jump_index++ );
 		ft.add_edge( loop_mid, ss_boundaries[ ii-1 ].second+1, core::kinematics::Edge::PEPTIDE );
 		ft.add_edge( loop_mid, ss_boundaries[ ii ].first-1, core::kinematics::Edge::PEPTIDE );
+		ft.add_edge( first_mid, ss_mid, jump_index++ );
 		ft.add_edge( ss_mid, ss_boundaries[ ii ].first, core::kinematics::Edge::PEPTIDE );
 		ft.add_edge( ss_mid, ss_boundaries[ ii ].second, core::kinematics::Edge::PEPTIDE );
 	}
@@ -96,7 +96,7 @@ core::kinematics::FoldTree fold_tree_from_dssp_string(std::string & str) {
 	core::Size last_mid = ( ss_boundaries[ ss_boundaries.size() ].first + ss_boundaries[ ss_boundaries.size() ].second ) / 2;
 	ft.add_edge( first_mid, last_mid, jump_index);
 	ft.add_edge( last_mid, ss_boundaries[ ss_boundaries.size() ].first, core::kinematics::Edge::PEPTIDE );
-	ft.add_edge( last_mid, ss_boundaries.size(), core::kinematics::Edge::PEPTIDE );
+	ft.add_edge( last_mid, str.size(), core::kinematics::Edge::PEPTIDE );
 
 	return ft;
 }
@@ -141,6 +141,7 @@ public:
 		TS_ASSERT_EQUALS(identify_secondary_structure_spans( SS3 ), SS3_span);
 	}
 
+	// This Function is incomplete, it cannot test automatically.
 	void test_fold_tree_from_ss() {
 		TS_TRACE("Test fold tree from ss");
 		// TS_ASSERT_EQUALS(fold_tree_from_ss(SS4), SS4_ft);
