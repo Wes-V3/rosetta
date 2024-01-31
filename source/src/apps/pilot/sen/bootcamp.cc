@@ -39,6 +39,12 @@
 #include<core/optimization/MinimizerOptions.hh>
 #include<core/optimization/AtomTreeMinimizer.hh>
 
+// Self defined FoldTreeFromSS
+#include<protocols/bootcamp/fold_tree_from_ss.hh>
+
+// correctly_add_cutpoint_variants() 
+#include<core/pose/variant_util.hh>
+
 int main( int argc, char ** argv ) {
 	devel::init( argc, argv );
 	utility::vector1< std::string > filenames = basic::options::option[ basic::options::OptionKeys::in::file::s ].value();
@@ -50,8 +56,13 @@ int main( int argc, char ** argv ) {
 	}
 	
 	core::pose::PoseOP mypose = core::import_pose::pose_from_file( filenames[1] );
+	core::pose::correctly_add_cutpoint_variants(*mypose); // add cutpoint variants
 	
 	core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
+	
+	// Enable a new score term linear_chainbreak and set the weight to be 1	
+	sfxn->set_method_weights("linear_chainbreak", 1);
+
 	core::Real score = sfxn->score( *mypose );
 	std::cout << "The score is: " << score << std::endl;
 
@@ -80,6 +91,9 @@ int main( int argc, char ** argv ) {
 	core::Real acceptance_count = 0;
 	// Calculate and print out the average score
 	core::Real total_score = 0;
+
+	// Create FoldTree
+	mypose->fold_tree(protocols::bootcamp::fold_tree_from_ss(*mypose));
 
 	for (int i = 0; i < 100; i++) {
 		// Perturbation
