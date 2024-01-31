@@ -37,77 +37,10 @@
 // Edge
 #include <core/kinematics/Edge.hh>
 
+// fold_tree_from_ss
+#include <protocols/bootcamp/fold_tree_from_ss.hh> 
+
 static basic::Tracer TR("FoldTreeFromSS");
-
-utility::vector1< std::pair< core::Size, core::Size > >
-identify_secondary_structure_spans( std::string const & ss_string )
-{
-  utility::vector1< std::pair< core::Size, core::Size > > ss_boundaries;
-  core::Size strand_start = -1;
-  for ( core::Size ii = 0; ii < ss_string.size(); ++ii ) {
-    if ( ss_string[ ii ] == 'E' || ss_string[ ii ] == 'H'  ) {
-      if ( int( strand_start ) == -1 ) {
-        strand_start = ii;
-      } else if ( ss_string[ii] != ss_string[strand_start] ) {
-        ss_boundaries.push_back( std::make_pair( strand_start+1, ii ) );
-        strand_start = ii;
-      }
-    } else {
-      if ( int( strand_start ) != -1 ) {
-        ss_boundaries.push_back( std::make_pair( strand_start+1, ii ) );
-        strand_start = -1;
-      }
-    }
-  }
-  if ( int( strand_start ) != -1 ) {
-    // last residue was part of a ss-eleemnt                                                                                                                                
-    ss_boundaries.push_back( std::make_pair( strand_start+1, ss_string.size() ));
-  }
-  for ( core::Size ii = 1; ii <= ss_boundaries.size(); ++ii ) {
-    std::cout << "SS Element " << ii << " from residue "
-      << ss_boundaries[ ii ].first << " to "
-      << ss_boundaries[ ii ].second << std::endl;
-  }
-  return ss_boundaries;
-}
-
-//!!! when ss with only one residue is not taken into consideration
-core::kinematics::FoldTree fold_tree_from_dssp_string(std::string & str) {
-	core::kinematics::FoldTree ft;
-	
-	utility::vector1< std::pair< core::Size, core::Size > > ss_boundaries = identify_secondary_structure_spans(str);
-	core::Size jump_index = 1;
-
-	core::Size first_mid = ( ss_boundaries[ 1 ].first + ss_boundaries[ 1 ].second ) / 2;
-	ft.add_edge( first_mid, 1, core::kinematics::Edge::PEPTIDE );
-	ft.add_edge( first_mid, ss_boundaries[ 1 ].second, core::kinematics::Edge::PEPTIDE );
-	
-	for ( core::Size ii = 2; ii < ss_boundaries.size(); ++ii ) {
-		core::Size loop_mid = (ss_boundaries[ ii-1 ].second + ss_boundaries[ ii ].first) / 2;
-		core::Size ss_mid = (ss_boundaries[ ii ].first + ss_boundaries[ ii ].second) / 2;
-		ft.add_edge( first_mid, loop_mid, jump_index++ );
-		ft.add_edge( loop_mid, ss_boundaries[ ii-1 ].second+1, core::kinematics::Edge::PEPTIDE );
-		ft.add_edge( loop_mid, ss_boundaries[ ii ].first-1, core::kinematics::Edge::PEPTIDE );
-		ft.add_edge( first_mid, ss_mid, jump_index++ );
-		ft.add_edge( ss_mid, ss_boundaries[ ii ].first, core::kinematics::Edge::PEPTIDE );
-		ft.add_edge( ss_mid, ss_boundaries[ ii ].second, core::kinematics::Edge::PEPTIDE );
-	}
-	
-	core::Size last_mid = ( ss_boundaries[ ss_boundaries.size() ].first + ss_boundaries[ ss_boundaries.size() ].second ) / 2;
-	ft.add_edge( first_mid, last_mid, jump_index);
-	ft.add_edge( last_mid, ss_boundaries[ ss_boundaries.size() ].first, core::kinematics::Edge::PEPTIDE );
-	ft.add_edge( last_mid, str.size(), core::kinematics::Edge::PEPTIDE );
-
-	return ft;
-}
-
-core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & mypose) {
-	// pose to dssp
-	core::scoring::dssp::Dssp mydssp(mypose);
-	std::string dssp_string = mydssp.get_dssp_secstruct();
-	core::kinematics::FoldTree ft = fold_tree_from_dssp_string(dssp_string);
-	return ft;
-}
 
 class FoldTreeFromSS : public CxxTest::TestSuite {
 	//Define Variables
@@ -136,16 +69,16 @@ public:
 
 	void test_SS_span() {
 		TS_TRACE("Test SS span");
-		TS_ASSERT_EQUALS(identify_secondary_structure_spans( SS1 ), SS1_span);
-		TS_ASSERT_EQUALS(identify_secondary_structure_spans( SS2 ), SS2_span);
-		TS_ASSERT_EQUALS(identify_secondary_structure_spans( SS3 ), SS3_span);
+		TS_ASSERT_EQUALS(protocols::bootcamp::identify_secondary_structure_spans( SS1 ), SS1_span);
+		TS_ASSERT_EQUALS(protocols::bootcamp::identify_secondary_structure_spans( SS2 ), SS2_span);
+		TS_ASSERT_EQUALS(protocols::bootcamp::identify_secondary_structure_spans( SS3 ), SS3_span);
 	}
 
 	// This Function is incomplete, it cannot test automatically.
 	void test_fold_tree_from_ss() {
 		TS_TRACE("Test fold tree from ss");
 		// TS_ASSERT_EQUALS(fold_tree_from_ss(SS4), SS4_ft);
-		core::kinematics::FoldTree ft = fold_tree_from_dssp_string(SS4);
+		core::kinematics::FoldTree ft = protocols::bootcamp::fold_tree_from_dssp_string(SS4);
 		std::cout << ft << std::endl;
 	}
 

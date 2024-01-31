@@ -469,6 +469,9 @@ sources = {
 	"protocols/testing": [
 		"BenchmarkBuildRotamersMover",
 	],
+	"protocols/bootcamp": [
+		"fold_tree_from_ss",
+	],
 }
 include_path = [
 ]
