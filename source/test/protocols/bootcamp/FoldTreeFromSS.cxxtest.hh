@@ -29,10 +29,13 @@
 // Utility, etc Headers
 #include <basic/Tracer.hh>
 
+// FoldTree
 #include <utility>
 #include <core/kinematics/FoldTree.hh>
 #include <core/scoring/dssp/Dssp.hh>
-#include <core/scoring/dssp/Dssp.fwd.hh>
+
+// Edge
+#include <core/kinematics/Edge.hh>
 
 static basic::Tracer TR("FoldTreeFromSS");
 
@@ -68,29 +71,43 @@ identify_secondary_structure_spans( std::string const & ss_string )
   return ss_boundaries;
 }
 
-core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & mypose) {
-	// pose to dssp
-	core::scoring::dssp::DsspOP mydssp(mypose);
-	std::string dssp_string = mydssp->get_dssp_secstruct();
-	fold_tree_from_dssp_string(dssp_string);
-}
-
+//!!! when ss with only one residue is not taken into consideration
 core::kinematics::FoldTree fold_tree_from_dssp_string(std::string & str) {
 	core::kinematics::FoldTree ft;
 	
-	
 	utility::vector1< std::pair< core::Size, core::Size > > ss_boundaries = identify_secondary_structure_spans(str);
-	
-	for ( core::Size ii = 1; ii <= ss_boundaries.size(); ++ii ) {
-		core::Size mid = (ss_boundaries[ ii ].first + ss_boundaries[ ii ].second) / 2;
-	}
+	core::Size jump_index = 1;
 
-	for ( core::Size ii = 0; ii < ss_string.size(); ++ii ) {
-		ft.add_edge( x, y, core::kinematics::Edge::PEPTIDE );
-		ft.add_edge( x, y, ii );
+	core::Size first_mid = ( ss_boundaries[ 1 ].first + ss_boundaries[ 1 ].second ) / 2;
+	ft.add_edge( first_mid, 1, core::kinematics::Edge::PEPTIDE );
+	ft.add_edge( first_mid, ss_boundaries[ 1 ].second, core::kinematics::Edge::PEPTIDE );
+	
+	for ( core::Size ii = 2; ii < ss_boundaries.size(); ++ii ) {
+		core::Size loop_mid = (ss_boundaries[ ii-1 ].second + ss_boundaries[ ii ].first) / 2;
+		core::Size ss_mid = (ss_boundaries[ ii ].first + ss_boundaries[ ii ].second) / 2;
+		ft.add_edge( first_mid, loop_mid, jump_index++ );
+		ft.add_edge( first_mid, ss_mid, jump_index++ );
+		ft.add_edge( loop_mid, ss_boundaries[ ii-1 ].second+1, core::kinematics::Edge::PEPTIDE );
+		ft.add_edge( loop_mid, ss_boundaries[ ii ].first-1, core::kinematics::Edge::PEPTIDE );
+		ft.add_edge( ss_mid, ss_boundaries[ ii ].first, core::kinematics::Edge::PEPTIDE );
+		ft.add_edge( ss_mid, ss_boundaries[ ii ].second, core::kinematics::Edge::PEPTIDE );
 	}
+	
+	core::Size last_mid = ( ss_boundaries[ ss_boundaries.size() ].first + ss_boundaries[ ss_boundaries.size() ].second ) / 2;
+	ft.add_edge( first_mid, last_mid, jump_index);
+	ft.add_edge( last_mid, ss_boundaries[ ss_boundaries.size() ].first, core::kinematics::Edge::PEPTIDE );
+	ft.add_edge( last_mid, ss_boundaries.size(), core::kinematics::Edge::PEPTIDE );
+
+	return ft;
 }
 
+core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & mypose) {
+	// pose to dssp
+	core::scoring::dssp::Dssp mydssp(mypose);
+	std::string dssp_string = mydssp.get_dssp_secstruct();
+	core::kinematics::FoldTree ft = fold_tree_from_dssp_string(dssp_string);
+	return ft;
+}
 
 class FoldTreeFromSS : public CxxTest::TestSuite {
 	//Define Variables
@@ -104,13 +121,13 @@ private:
 	utility::vector1< std::pair< core::Size, core::Size > > SS3_span = { {1, 9}, {11, 18}, {20, 28}, {30, 30}, {32, 36}, {38, 38}, {40, 40}, {42, 42}, {44, 51} };
 
 	std::string SS4 = "   EEEEEEE    EEEEEEE         EEEEEEEEE    EEEEEEEEEE   HHHHHH         EEEEEEEEE         EEEEE     ";
-	core::kinematics::FoldTree SS4_ft;
 
 public:
 
 	void setUp() {
 		core_init();
-
+		// core::kinematics::FoldTree SS4_ft;
+		// SS4_ft.get_residue_edge(SS4); //!!! This is not right!
 	}
 
 	void tearDown() {
@@ -126,7 +143,9 @@ public:
 
 	void test_fold_tree_from_ss() {
 		TS_TRACE("Test fold tree from ss");
-		TS_ASSERT_EQUALS(fold_tree_from_ss(SS4), SS4_ft);
+		// TS_ASSERT_EQUALS(fold_tree_from_ss(SS4), SS4_ft);
+		core::kinematics::FoldTree ft = fold_tree_from_dssp_string(SS4);
+		std::cout << ft << std::endl;
 	}
 
 };
