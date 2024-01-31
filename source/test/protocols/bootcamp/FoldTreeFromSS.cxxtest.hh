@@ -78,6 +78,7 @@ core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & mypose) {
 core::kinematics::FoldTree fold_tree_from_dssp_string(std::string & str) {
 	core::kinematics::FoldTree ft;
 	
+	
 	utility::vector1< std::pair< core::Size, core::Size > > ss_boundaries = identify_secondary_structure_spans(str);
 	
 	for ( core::Size ii = 1; ii <= ss_boundaries.size(); ++ii ) {
