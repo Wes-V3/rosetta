@@ -76,7 +76,13 @@ int main( int argc, char ** argv ) {
 	// Declare copy_pose
 	core::pose::Pose copy_pose;
 
-	for (int i = 0; i < 10; i++) {
+	// Calculate and print out the acceptance rate
+	core::Real acceptance_count = 0;
+	// Calculate and print out the average score
+	core::Real total_score = 0;
+
+	for (int i = 0; i < 100; i++) {
+		// Perturbation
 		core::Real uniform_random_number = numeric::random::uniform();
 		core::Size randres = static_cast< core::Size > (uniform_random_number * N + 1);
 		core::Real pert1 = numeric::random::gaussian();
@@ -96,11 +102,16 @@ int main( int argc, char ** argv ) {
 		atm.run( copy_pose, mm, *sfxn, min_opts );
 		*mypose = copy_pose;
 
+		if (mc->boltzmann( *mypose )) {
+			acceptance_count++;
+		};
+		total_score = total_score + mc->last_accepted_score();
 
-		mc->boltzmann( *mypose );
 		the_observer->pymol().apply( *mypose );
 	}
 	
+	std::cout << "Acceptance rate: " << acceptance_count/100 << " | Average score: " << total_score/100 << std::endl;
+
 	std::cout << "After MonteCarlo, the score is: " << sfxn->score( *mypose ) << std::endl;
 	// std::cout << N << " | " << randres << " | " << pert1 << " | " << pert2 << " | " << orig_phi << " | " << orig_psi << " | " << mypose->phi( randres ) << " | " << mypose->psi( randres ) << std::endl;
 
