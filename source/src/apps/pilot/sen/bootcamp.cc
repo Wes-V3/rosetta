@@ -115,6 +115,6 @@ int main( int argc, char ** argv ) {
 	std::cout << "After MonteCarlo, the score is: " << sfxn->score( *mypose ) << std::endl;
 	// std::cout << N << " | " << randres << " | " << pert1 << " | " << pert2 << " | " << orig_phi << " | " << orig_psi << " | " << mypose->phi( randres ) << " | " << mypose->psi( randres ) << std::endl;
 
-
+	
 }
 // randomseed
