@@ -94,22 +94,22 @@ BootCampMover::~BootCampMover(){}
 
 /// @brief Apply the mover
 void
-BootCampMover::apply( core::pose::Pose& pose){
+BootCampMover::apply( core::pose::Pose& pose ){
 	
 	core::pose::correctly_add_cutpoint_variants(pose); // add cutpoint variants
 	
-	core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
+	// core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
 	
 	// Enable a new score term linear_chainbreak and set the weight to be 1	
-	core::scoring::ScoreType new_linear_chainbreak = core::scoring::ScoreType::linear_chainbreak;
-	utility::vector1<core::Real> weight = {1.0};
-	sfxn->set_method_weights( new_linear_chainbreak, weight);
+	// core::scoring::ScoreType new_linear_chainbreak = core::scoring::ScoreType::linear_chainbreak;
+	// utility::vector1<core::Real> weight = {1.0};
+	// sfxn->set_method_weights( new_linear_chainbreak, weight );
 
-	core::Real score = sfxn->score( pose );
+	core::Real score = sfxn_->score( pose );
 	std::cout << "The score is: " << score << std::endl;
 
 	core::Real temperature = 1;
-	protocols::moves::MonteCarloOP mc ( new protocols::moves::MonteCarlo( pose, *sfxn, temperature ) );
+	protocols::moves::MonteCarloOP mc ( new protocols::moves::MonteCarlo( pose, *sfxn_, temperature ) );
 	
 	// protocols::moves::PyMOLObserverOP the_observer = protocols::moves::AddPyMOLObserver( *mypose, true, 0 );
 
@@ -137,7 +137,7 @@ BootCampMover::apply( core::pose::Pose& pose){
 	// Create FoldTree
 	pose.fold_tree(protocols::bootcamp::fold_tree_from_ss(pose));
 
-	for (int i = 0; i < 100; i++) {
+	for (core::Size i = 0; i < num_iterations_; i++) {
 		// Perturbation
 		core::Real uniform_random_number = numeric::random::uniform();
 		core::Size randres = static_cast< core::Size > (uniform_random_number * N + 1);
@@ -151,11 +151,11 @@ BootCampMover::apply( core::pose::Pose& pose){
 		// Packing and minimization
 		core::pack::task::PackerTaskOP repack_task = core::pack::task::TaskFactory::create_packer_task( pose );
 		repack_task->restrict_to_repacking();
-		core::pack::pack_rotamers( pose, *sfxn, repack_task );
+		core::pack::pack_rotamers( pose, *sfxn_, repack_task );
 		
 		// Invoke minimization
 		copy_pose = pose; // To avoid sending pose to PyMol over and over again which cause long runtime
-		atm.run( copy_pose, mm, *sfxn, min_opts );
+		atm.run( copy_pose, mm, *sfxn_, min_opts );
 		pose = copy_pose;
 
 		if (mc->boltzmann( pose )) {
@@ -165,9 +165,9 @@ BootCampMover::apply( core::pose::Pose& pose){
 		
 	}
 	
-	std::cout << "Acceptance rate: " << acceptance_count/100 << " | Average score: " << total_score/100 << std::endl;
+	std::cout << "Acceptance rate: " << acceptance_count/num_iterations_ << " | Average score: " << total_score/num_iterations_ << std::endl;
 
-	std::cout << "After MonteCarlo, the score is: " << sfxn->score( pose ) << std::endl;
+	std::cout << "After MonteCarlo, the score is: " << sfxn_->score( pose ) << std::endl;
 	// std::cout << N << " | " << randres << " | " << pert1 << " | " << pert2 << " | " << orig_phi << " | " << orig_psi << " | " << mypose->phi( randres ) << " | " << mypose->psi( randres ) << std::endl;
 	
 }
@@ -247,6 +247,29 @@ void BootCampMoverCreator::provide_xml_schema( utility::tag::XMLSchemaDefinition
 {
 	BootCampMover::provide_xml_schema( xsd );
 }
+
+
+/// @brief getter and setter function to access the private data
+void 
+BootCampMover::set_scorefunction(core::scoring::ScoreFunctionOP sfxn) { //add & to modify in place
+	sfxn_ = sfxn;
+};
+
+void 
+BootCampMover::set_iternum(core::Size iters) {
+	num_iterations_ = iters;
+};
+
+core::scoring::ScoreFunctionOP 
+BootCampMover::get_scorefunction() {
+	return sfxn_;
+};
+
+core::Size 
+BootCampMover::get_iternum() {
+	return num_iterations_;
+};
+
 
 /// @brief This mover is unpublished.  It returns sen as its author.
 void
