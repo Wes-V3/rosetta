@@ -30,6 +30,11 @@
 
 #include <basic/citation_manager/UnpublishedModuleInfo.fwd.hh>
 
+// Score function
+#include<core/scoring/ScoreFunction.hh>
+#include<core/scoring/ScoreFunction.fwd.hh>
+
+
 namespace protocols {
 namespace bootcamp {
 
@@ -105,7 +110,8 @@ public: //Function overrides needed for the citation manager:
 private: // methods
 
 private: // data
-
+	core::scoring::ScoreFunctionOP sfxn_;
+	core::Size num_iterations_;
 };
 
 std::ostream &
