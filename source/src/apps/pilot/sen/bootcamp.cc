@@ -57,6 +57,17 @@ int main( int argc, char ** argv ) {
 	devel::init(argc, argv);
 
 	protocols::bootcamp::BootCampMoverOP bootcamp_mover( new protocols::bootcamp::BootCampMover() );
+	
+	// initialize the number of iterations and score funtion
+	core::Size iters = 10;
+	core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
+	// Enable a new score term linear_chainbreak and set the weight to be 1	
+	core::scoring::ScoreType new_linear_chainbreak = core::scoring::ScoreType::linear_chainbreak;
+	utility::vector1<core::Real> weight = {1.0};
+	sfxn->set_method_weights( new_linear_chainbreak, weight );
+	// set
+	bootcamp_mover->set_scorefunction(sfxn);
+	bootcamp_mover->set_iternum(iters);
 
 	protocols::jd2::JobDistributor::get_instance()->go(bootcamp_mover);
 

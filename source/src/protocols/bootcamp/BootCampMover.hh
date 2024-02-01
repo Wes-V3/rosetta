@@ -102,6 +102,12 @@ public:
 	void
 	provide_xml_schema( utility::tag::XMLSchemaDefinition & xsd );
 
+public: //Function of getter and setter
+	void set_scorefunction(core::scoring::ScoreFunctionOP);
+	void set_iternum(core::Size);
+	core::scoring::ScoreFunctionOP get_scorefunction();
+	core::Size get_iternum();
+
 public: //Function overrides needed for the citation manager:
 
 	/// @brief This mover is unpublished.  It returns sen as its author.

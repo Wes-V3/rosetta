@@ -889,6 +889,7 @@ sources = {
 
 	"bootcamp": [
 		"FoldTreeFromSS",
+		"BootCampMover",
 	],
 
 }
