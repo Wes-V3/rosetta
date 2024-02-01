@@ -65,6 +65,8 @@
 // correctly_add_cutpoint_variants() 
 #include<core/pose/variant_util.hh>
 
+// JobDistributor
+#include <protocols/jd2/JobDistributor.hh>
 
 static basic::Tracer TR( "protocols.bootcamp.BootCampMover" );
 
@@ -160,8 +162,7 @@ BootCampMover::apply( core::pose::Pose& pose){
 			acceptance_count++;
 		};
 		total_score = total_score + mc->last_accepted_score();
-
-		// the_observer->pymol().apply( pose );
+		
 	}
 	
 	std::cout << "Acceptance rate: " << acceptance_count/100 << " | Average score: " << total_score/100 << std::endl;
