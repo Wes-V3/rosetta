@@ -61,7 +61,8 @@ int main( int argc, char ** argv ) {
 	core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
 	
 	// Enable a new score term linear_chainbreak and set the weight to be 1	
-	sfxn->set_method_weights("linear_chainbreak", 1);
+	utility::vector1 <core::Real> weight = {1.0};
+	sfxn->set_method_weights(core::scoring::ScoreType::linear_chainbreak, weight);
 
 	core::Real score = sfxn->score( *mypose );
 	std::cout << "The score is: " << score << std::endl;

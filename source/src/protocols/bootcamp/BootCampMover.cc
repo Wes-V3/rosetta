@@ -99,7 +99,9 @@ BootCampMover::apply( core::pose::Pose& pose){
 	core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
 	
 	// Enable a new score term linear_chainbreak and set the weight to be 1	
-	// sfxn->set_method_weights( "linear_chainbreak", 1);
+	core::scoring::ScoreType new_linear_chainbreak = core::scoring::ScoreType::linear_chainbreak;
+	utility::vector1<core::Real> weight = {1.0};
+	sfxn->set_method_weights( new_linear_chainbreak, weight);
 
 	core::Real score = sfxn->score( pose );
 	std::cout << "The score is: " << score << std::endl;
