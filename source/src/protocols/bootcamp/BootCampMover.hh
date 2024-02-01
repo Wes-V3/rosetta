@@ -82,6 +82,12 @@ public:
 		basic::datacache::DataMap & data ) override;
 
 	//BootCampMover & operator=( BootCampMover const & src );
+	
+	/// @brief parse "scorefxn" XML option (can be employed virtually by derived Packing movers)
+	virtual void parse_score_function(
+		TagCOP,
+		basic::datacache::DataMap const &
+	);
 
 	/// @brief required in the context of the parser/scripting scheme
 	protocols::moves::MoverOP

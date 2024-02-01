@@ -38,6 +38,12 @@
 #include <core/scoring/ScoreFunction.fwd.hh>
 #include <core/scoring/ScoreFunctionFactory.hh>
 
+// Tag
+#include <utility/tag/Tag.hh>
+#include <utility/tag/Tag.fwd.hh>
+
+// DataMap
+#include <basic/datacache/DataMap.hh>
 
 static basic::Tracer TR("BootCampMover");
 
@@ -48,6 +54,9 @@ private:
 	protocols::bootcamp::BootCampMoverOP bootcamp_mover;
 	core::Size iters;
 	core::scoring::ScoreFunctionOP sfxn;
+	utility::tag::TagCOP tag;
+	basic::datacache::DataMap data;
+
 public:
 
 	void setUp() {
@@ -92,5 +101,32 @@ public:
 		TS_ASSERT(bootcamp_mover->get_scorefunction() == sfxn);
 	}
 
+	void test_parse_my_tag() {
+		TS_TRACE("Test parsing my tag");
 
+		/// @brief Generate a tagptr from a string
+		/// For parse_my_tag tests, only do the relevant tag, not the full <ROSETTASCRIPTS> ... </ROSETTASCRIPTS> wrapped tag.
+		std::string xml_file = "<BootCampMover niterations=\"1025\"/>";
+		core::Size niterations = 1025;
+
+		std::stringstream instream( xml_file );
+		utility::tag::TagCOP iter_tag( utility::tag::Tag::create( instream ) );
+		
+		bootcamp_mover->parse_my_tag(iter_tag, data);
+		TS_ASSERT_EQUALS(bootcamp_mover->get_iternum(), niterations);
+	}
+
+	void test_parse_score_function() {
+		std::string xml_file = "<BootCampMover scorefxn=\"testing123\"/>";
+
+		std::stringstream instream( xml_file );
+		utility::tag::TagCOP sfxn_tag( utility::tag::Tag::create( instream ) );
+
+		core::scoring::ScoreFunctionOP sfxn2 = core::scoring::ScoreFunctionOP( new core::scoring::ScoreFunction );
+		data.add( "scorefxns" , "testing123", sfxn2 );
+
+		bootcamp_mover->parse_score_function(sfxn_tag, data);
+
+		TS_ASSERT( sfxn2 == bootcamp_mover->get_scorefunction() );
+	}
 };

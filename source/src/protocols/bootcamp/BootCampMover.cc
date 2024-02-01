@@ -68,6 +68,9 @@
 // JobDistributor
 #include <protocols/jd2/JobDistributor.hh>
 
+// RosettaScripts
+#include <protocols/rosetta_scripts/util.hh>
+
 static basic::Tracer TR( "protocols.bootcamp.BootCampMover" );
 
 namespace protocols {
@@ -187,11 +190,29 @@ BootCampMover::show(std::ostream & output) const
 /// @brief parse XML tag (to use this Mover in Rosetta Scripts)
 void
 BootCampMover::parse_my_tag(
-	utility::tag::TagCOP ,
-	basic::datacache::DataMap&
+	utility::tag::TagCOP tag,
+	basic::datacache::DataMap& datamap
 ) {
-
+	if ( tag->hasOption("niterations") ) {
+		num_iterations_ = tag->getOption<core::Size>("niterations",1);
+		runtime_assert( num_iterations_ > 0 );
+	}
+	(void)datamap; // to avoid warning
+	// parse_score_function( tag, datamap );
 }
+
+/// @brief parse "scorefxn" XML option
+void
+BootCampMover::parse_score_function(
+	TagCOP const tag,
+	basic::datacache::DataMap const & datamap
+)
+{
+	core::scoring::ScoreFunctionOP new_score_function( protocols::rosetta_scripts::parse_score_function( tag, datamap ) );
+	if ( new_score_function == nullptr ) return;
+	set_scorefunction( new_score_function );
+}
+
 void BootCampMover::provide_xml_schema( utility::tag::XMLSchemaDefinition & xsd )
 {
 
@@ -252,6 +273,7 @@ void BootCampMoverCreator::provide_xml_schema( utility::tag::XMLSchemaDefinition
 /// @brief getter and setter function to access the private data
 void 
 BootCampMover::set_scorefunction(core::scoring::ScoreFunctionOP sfxn) { //add & to modify in place
+	runtime_assert( sfxn != nullptr );
 	sfxn_ = sfxn;
 };
 
