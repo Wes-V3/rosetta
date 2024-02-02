@@ -75,11 +75,33 @@ public:
 	}
 
 	// This Function is incomplete, it cannot test automatically.
-	void test_fold_tree_from_ss() {
-		TS_TRACE("Test fold tree from ss");
+	void test_fold_tree_from_dssp_string() {
+		TS_TRACE("Test fold tree from dssp string");
 		// TS_ASSERT_EQUALS(fold_tree_from_ss(SS4), SS4_ft);
 		core::kinematics::FoldTree ft = protocols::bootcamp::fold_tree_from_dssp_string(SS4);
+		std::cout << ft << std::endl;
+		
+		// FoldTree::get_residue_edge 
+		std::string SS5 = " E H   EEE  EEEE EEE E   ";
+		// std::string SS5"1234567890123456789012345";
+		core::kinematics::FoldTree ft2 = protocols::bootcamp::fold_tree_from_dssp_string(SS5);
+		std::cout << ft2 << std::endl;
+	}
+
+	void test_fold_tree_from_ss() {
+		TS_TRACE("Test fold tree from ss");
+		utility::vector1< std::string > filenames = {"/Users/wes/Documents/rosetta/source/1UBQ.pdb"};
+		core::pose::PoseOP mypose = core::import_pose::pose_from_file( filenames[1] );
+		
+		core::scoring::dssp::Dssp mydssp(*mypose);
+	    std::string dssp_string = mydssp.get_dssp_secstruct();
+		std::cout << dssp_string << std::endl;
+
+		core::kinematics::FoldTree ft = protocols::bootcamp::fold_tree_from_ss(*mypose);
 		std::cout << ft << std::endl;
 	}
 
 };
+
+//LEEEEEELLLLEEEEELLLLLEHHHHHHHHHHHHLLLHHHEEEEELLEELLLLLELHHHLLLLLLEEEEEELLLLL
+//1234567890123456789012345678901234567890123456789012345678901234567890123456

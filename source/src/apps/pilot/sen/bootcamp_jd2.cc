@@ -16,7 +16,7 @@
 
 // protocol headers
 #include <protocols/jd2/JobDistributor.hh>
-#include <protocols/bootcamp/BootcampMover.hh>
+#include <protocols/bootcamp/BootCampMover.hh>
 
 // utility headers
 #include <utility/excn/Exceptions.hh>
@@ -58,7 +58,7 @@ main( int argc, char * argv [] )
 		devel::init( argc, argv );
 
 
-		protocols::bootcamp::BootcampMoverOP mover_protocol( new protocols::bootcamp::BootcampMover() );
+		protocols::bootcamp::BootCampMoverOP mover_protocol( new protocols::bootcamp::BootCampMover() );
 
 		protocols::jd2::JobDistributor::get_instance()->go( mover_protocol );
 

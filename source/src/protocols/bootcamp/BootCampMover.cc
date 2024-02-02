@@ -71,6 +71,9 @@
 // RosettaScripts
 #include <protocols/rosetta_scripts/util.hh>
 
+// ForTest
+// #include <core/scoring/dssp/Dssp.hh>
+
 static basic::Tracer TR( "protocols.bootcamp.BootCampMover" );
 
 namespace protocols {
@@ -137,6 +140,15 @@ BootCampMover::apply( core::pose::Pose& pose ){
 	// Calculate and print out the average score
 	core::Real total_score = 0;
 
+
+	// //Test Fold Tree
+	// core::scoring::dssp::Dssp mydssp(pose);
+	// std::cout << mydssp.get_dssp_secstruct() << std::endl;
+	// core::kinematics::FoldTree ft = protocols::bootcamp::fold_tree_from_ss(pose);
+	// std::cout << ft << std::endl;
+	// pose.fold_tree(ft);
+	// //End Test
+
 	// Create FoldTree
 	pose.fold_tree(protocols::bootcamp::fold_tree_from_ss(pose));
 
@@ -197,8 +209,10 @@ BootCampMover::parse_my_tag(
 		num_iterations_ = tag->getOption<core::Size>("niterations",1);
 		runtime_assert( num_iterations_ > 0 );
 	}
-	(void)datamap; // to avoid warning
-	// parse_score_function( tag, datamap );
+	if ( tag->hasOption("scorefxn") ){
+		parse_score_function( tag, datamap );
+	}
+	// (void)datamap; // to avoid warning
 }
 
 /// @brief parse "scorefxn" XML option
@@ -220,13 +234,13 @@ void BootCampMover::provide_xml_schema( utility::tag::XMLSchemaDefinition & xsd 
 	AttributeList attlist;
 
 	//here you should write code to describe the XML Schema for the class.  If it has only attributes, simply fill the probided AttributeList.
+	attlist
+		+ XMLSchemaAttribute( "scorefxn", xs_string, "The score function to be use" )
+		+ XMLSchemaAttribute( "niterations", xsct_non_negative_integer, "The number of iterations" );
 
 	protocols::moves::xsd_type_definition_w_attributes( xsd, mover_name(), "Create a new mover subclass", attlist );
-	attlist
-		+ XMLSchemaAttribute( "sfxn", xs_string, "The score function to be use" )
-		+ XMLSchemaAttribute( "niteration", xsct_non_negative_integer, "The number of iterations" );
 
-	// Generator
+	// Generator?
 	
 }
 

@@ -1,0 +1,11 @@
+<ROSETTASCRIPTS>
+
+        <MOVERS>
+                <BootCampMover name="min_mover" niterations="10" scorefxn="REF2015"/>
+        </MOVERS>
+
+        <PROTOCOLS>
+                <Add mover_name="min_mover"/>
+        </PROTOCOLS>
+
+</ROSETTASCRIPTS>

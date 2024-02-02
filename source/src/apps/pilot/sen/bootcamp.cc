@@ -59,7 +59,7 @@ int main( int argc, char ** argv ) {
 	protocols::bootcamp::BootCampMoverOP bootcamp_mover( new protocols::bootcamp::BootCampMover() );
 	
 	// initialize the number of iterations and score funtion
-	core::Size iters = 10;
+	core::Size iters = 100;
 	core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
 	// Enable a new score term linear_chainbreak and set the weight to be 1	
 	core::scoring::ScoreType new_linear_chainbreak = core::scoring::ScoreType::linear_chainbreak;

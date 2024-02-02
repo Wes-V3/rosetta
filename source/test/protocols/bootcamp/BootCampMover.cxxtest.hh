@@ -32,6 +32,7 @@
 // BootCampMover
 #include <protocols/bootcamp/BootCampMover.hh>
 #include <protocols/bootcamp/BootCampMover.fwd.hh>
+#include <protocols/bootcamp/BootCampMoverCreator.hh>
 
 // ScoreFunction
 #include <core/scoring/ScoreFunction.hh>
@@ -101,6 +102,13 @@ public:
 		TS_ASSERT(bootcamp_mover->get_scorefunction() == sfxn);
 	}
 
+	void test_mover_factory() {
+		protocols::bootcamp::BootCampMoverCreator bcmc;
+		protocols::moves::MoverOP base_mover_op = bcmc.create_mover();
+		protocols::bootcamp::BootCampMoverOP bcm_op = protocols::bootcamp::BootCampMoverOP( utility::pointer::dynamic_pointer_cast< protocols::bootcamp::BootCampMover > ( base_mover_op ) );
+		TS_ASSERT( bcm_op != 0 );
+	}
+
 	void test_parse_my_tag() {
 		TS_TRACE("Test parsing my tag");
 
@@ -125,7 +133,7 @@ public:
 		core::scoring::ScoreFunctionOP sfxn2 = core::scoring::ScoreFunctionOP( new core::scoring::ScoreFunction );
 		data.add( "scorefxns" , "testing123", sfxn2 );
 
-		bootcamp_mover->parse_score_function(sfxn_tag, data);
+		bootcamp_mover->parse_my_tag(sfxn_tag, data);
 
 		TS_ASSERT( sfxn2 == bootcamp_mover->get_scorefunction() );
 	}
